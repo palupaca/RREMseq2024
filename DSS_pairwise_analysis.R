@@ -4,7 +4,7 @@ library(DSS)
 library(bsseq)
 library(data.table)
 
-#DSS pair-wise analysis of alveolar Tconv vs Treg cells
+#Exmaple analysis script for DSS pair-wise analysis of Tconv vs Treg cells
 
 #import cov files
 files <- list.files(path=".", pattern = "*.gz") # get file names
