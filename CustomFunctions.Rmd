@@ -5,11 +5,6 @@ date: "2025-03-13"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
-```
-
 
 ## Calculate CpG coverage using Seqmonk CpG probes (Read position Probe Generator; minimum read count per position=1)
 ```{r}
