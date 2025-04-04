@@ -1,0 +1,147 @@
+---
+title: "RREMseq_CustomFunctions.R"
+author: "Iris Liu"
+date: "2025-04-01"
+output: html_document
+---
+
+
+## Estimate duplicate CpG based on genome position and methylation coverage
+```{r}
+CountCpGdup <- function(x, Cov) {
+  
+  y <- as.data.frame(x)
+  pair = NULL
+  pair2 = NULL
+  pair3 = NULL
+  
+  row_even <- seq_len(nrow(y)) %% 2 == 0
+  y.row <- row.names(y)
+  num.even <- as.numeric(y.row[row_even])
+  last_it <- length(num.even)
+  num.even1 <- num.even[1]
+  num.even2 <- num.even[last_it]
+  num.even <- num.even[-c(1,last_it)]
+  
+  
+  
+  z <- lapply(num.even, function(i) {
+    
+    if (i > 3 && i < nrow(Cov)) {
+      
+      a <- x[i]
+      b <- x[i-1]
+      c <- x[i+1]
+      d <- x[i-2]
+      e <- x[i-3]
+      #f <- x[i+2]
+    
+      if (( a - b == 1) && (!(a- d == 2))) {
+        pair <- Cov[c(i-1, i), ]
+      } else if (( a - b == 1) && (d- e == 1)){
+        pair <- Cov[c(i-1, i),]
+      }
+      else if ( c - a == 1) {
+        pair <- Cov[c(i, i+1), ]
+      }
+      
+      pair <- na.omit(pair)
+      
+      return(pair)
+      
+      
+    }
+  }
+  )
+  
+  
+  z2 <- lapply(num.even1, function(i) {
+    a <- x[i]
+    b <- x[i-1]
+    c <- x[i+1]
+    d <- x[i-2]
+    #e <- x[i-3]
+    f <- x[i+2]
+    
+    if (a-b == 1){
+      pair2 <- Cov[c(i-1,i),]
+    } else if ((c-a == 1) && (!(f-c == 1))){
+      pair2 <- Cov[c(i,i+1),]    
+    }
+    pair2 <- na.omit(pair2)
+    
+    return(pair2)
+  })
+  
+  z3 <- lapply(num.even2, function(i) {
+    a <- x[i]
+    b <- x[i-1]
+    c <- x[i+1]
+    d <- x[i-2]
+    
+    if (nrow(Cov) %% 2 == 0) {
+      if ((a-b == 1) && (!(a- d == 2))) {
+        pair3 <- Cov[c(i-1,i),]
+    }}
+    else {
+    if ((a-b == 1) && (!(a- d == 2))) {
+      pair3 <- Cov[c(i-1,i),]
+    } else if (  (!(a-b ==1)) && (c-a == 1)) {
+      pair3 <- Cov[c(i,i+1),]
+    }
+      else if (  ((a-d ==2)) && (c-a == 1)) {
+      pair3 <- Cov[c(i,i+1),]
+      }
+    pair3 <- na.omit(pair3)
+    
+    return(pair3)
+  }
+  })
+  
+  z = append(z2, z)
+  z = append(z, z3)
+  
+  z = z[!sapply(z,is.null)]
+  
+  duplicated_count <- sum(sapply(z, function(x) nrow(x) == 2))
+  
+  return(duplicated_count)
+
+  
+}
+
+```
+
+
+## Calculate genomic elements coverage 
+```{r}
+FeatureCount <- function(df,TotalFeature,Cov) {
+  counts <- colSums(!is.na(df))
+  result <- data.frame(Sample = names(counts), Non_NA_Count = counts)
+  result$percentage <- result$Non_NA_Count/TotalFeature
+  result$Cov <- Cov
+  return(result)
+}
+```
+
+
+## Calculate mean and range to plot genomic elements methylation status 
+```{r}
+
+get_FeatureBeta_mean <- function(FeatureMethyl){
+  FeatureMethyl_mean = apply(FeatureMethyl, 1, mean)
+  return(FeatureMethyl_mean)
+}
+
+
+get_FeatureBeta_range <- function(FeatureMethyl){
+
+  FeatureMethyl_max <- apply(FeatureMethyl, 1, max)
+  FeatureMethyl_min <- apply(FeatureMethyl, 1, min)
+  FeatureMethyl_range <- cbind(FeatureMethyl_min,FeatureMethyl_max)
+  colnames(FeatureMethyl_range) <- c("min", "max")
+  FeatureMethyl_range <- as.data.frame(FeatureMethyl_range)
+  return(FeatureMethyl_range)
+}
+```
+
