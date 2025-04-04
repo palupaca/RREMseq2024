@@ -6,7 +6,7 @@ output: html_document
 ---
 
 
-## Estimate duplicate CpG based on genome position and methylation coverage
+## Estimate duplicate CpG based on genome position and methylation coverage (SeqMonk output)
 ```{r}
 CountCpGdup <- function(x, Cov) {
   
